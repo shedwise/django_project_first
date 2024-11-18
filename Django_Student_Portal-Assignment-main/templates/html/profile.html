@@ -1,0 +1,147 @@
+<!DOCTYPE html>
+{% load static %}
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Profile</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+  <link rel="stylesheet" href="{% static 'css/style.css' %}">
+</head>
+<body>
+
+ <!-- Profile Header -->
+ <section class="profile-header">
+ <!-- Template to display messages -->
+<div class="container mt-3">
+    {% if messages %}
+        {% for message in messages %}
+            <div class="alert alert-{{ message.tags }}" role="alert">
+                {{ message }}
+            </div>
+        {% endfor %}
+    {% endif %}
+</div>
+
+  <div class="container text-center">
+    <img src="{{ student.student_profile.profile_picture.url }}" alt="Profile Picture">
+    <h1>{{ student.first_name }} {{ student.last_name }}</h1>
+    <p>
+      {% for program in student.program_set.all %}
+        {{ program.courses }} Student | {{ cohort_group.name }}
+      {% endfor %}
+    </p>
+    <span class="badge badge-custom">{{ student.student_profile.rating }} Rating</span>
+  </div>
+</section>
+
+<!-- Profile Content -->
+<section class="profile-content">
+  <div class="container">
+    <div class="row">
+      <!-- About the Student -->
+      <div class="col-md-8">
+        <div class="card p-4">
+          <h5>About {{ student.first_name }}</h5>
+          <p>{{ student.first_name }} {{ student.last_name }} is {{ student.student_profile.bio }}</p>
+          <p>
+            Date of Birth: {{ student.student_profile.date_of_birth|date:"jS F Y" }} <br>
+            Address: {{ student.student_profile.address }} <br>
+            Joined: {{ student.student_profile.date_join|date:"F Y"  }}
+          </p>
+          <!-- Button to Open Modal -->
+          <button class="btn btn-custom" data-bs-toggle="modal" data-bs-target="#messageModal">Send Message</button>
+        </div>
+      </div>
+
+      <!-- Related Students -->
+      <div class="col-md-4">
+        <div class="card p-4">
+          {% if cohort_group %}
+          <h5>Related Students : {{ cohort_group.name }}</h5>
+          {% endif %}
+          <ul class="list-unstyled">
+            {% for member in cohort_members %}
+              {% if student.id != member.id %}
+              <li class="d-flex align-items-center mb-3">
+                <img src="{{ member.student_profile.profile_picture.url }}" alt="Student" class="related-student-img">
+                <div class="ms-3">
+                  <h6 class="mb-0">{{ member.first_name }}  {{ member.last_name }}</h6>
+                  {% for program in member.program_set.all %}
+                    <small>{{ program.courses }}</small>
+                  {% endfor %}
+                </div>
+              </li>
+              {% endif %}
+            {% endfor %}
+          </ul>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- Messaging Modal -->
+<div class="modal fade" id="messageModal" tabindex="-1" aria-labelledby="messageModalLabel" aria-hidden="true">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <form method="POST" action="{% url 'send_message' %}">
+        {% csrf_token %}
+        <input type="hidden" name="student_slug" value="{{ student.slug }}">
+
+        <div class="modal-header">
+          <h5 class="modal-title" id="messageModalLabel">Send a Message</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+        </div>
+        <div class="modal-body">
+          <div class="mb-3">
+            <label for="receiverName" class="form-label">Receiver's Name</label>
+            <input type="text" class="form-control" id="receiverName" name="receiver_name" value="{{ student.first_name }} {{ student.last_name }}" readonly>
+          </div>
+          <div class="mb-3">
+            <label for="receiverEmail" class="form-label">Receiver's Email Address</label>
+            <input type="email" class="form-control" id="receiverEmail" name="receiver_email" value="{{ student.student_profile.student.email }}" readonly>
+          </div>
+          <div class="mb-3">
+            <label for="emailTitle" class="form-label">Email Title</label>
+            <input type="text" class="form-control" id="emailTitle" name="email_title" placeholder="Enter the subject here" required>
+          </div>
+          <div class="mb-3">
+            <label for="messageBody" class="form-label">Message Body</label>
+            <textarea class="form-control" id="messageBody" name="message_body" rows="4" placeholder="Type your message" required></textarea>
+          </div>
+          <div class="mb-3">
+            <label for="senderName" class="form-label">Your Name</label>
+            <input type="text" class="form-control" id="senderName" name="sender_name" required>
+          </div>
+          <div class="mb-3">
+            <label for="senderContact" class="form-label">Your Contact Number</label>
+            <input type="tel" class="form-control" id="senderContact" name="sender_contact" required>
+          </div>
+          <div class="mb-3">
+            <label for="senderEmail" class="form-label">Your Email Address</label>
+            <input type="email" class="form-control" id="senderEmail" name="sender_email" required>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+          <button type="submit" class="btn btn-primary">Send Message</button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+
+
+  
+
+
+
+
+
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>
